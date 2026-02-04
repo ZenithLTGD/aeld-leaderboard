@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>AELD Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="nav">
+  <div class="logo">AELD</div>
+  <a href="index.html">Dashboard</a>
+  <a href="levels.html">Levels</a>
+  <a href="players.html">Top Players</a>
+  <a href="submit.html">Submit Record</a>
+</div>
+
+<div class="container">
+  <h2>Dashboard</h2>
+
+  <div class="grid" id="statsGrid">
+    <!-- Stats will be filled here dynamically -->
+  </div>
+</div>
+
+<script>
+  // Load Firebase compat libraries
+  const loadFirebase = function() {
+    const appScript = document.createElement('script');
+    appScript.src = "https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js";
+    appScript.onload = function() {
+      const firestoreScript = document.createElement('script');
+      firestoreScript.src = "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js";
+      firestoreScript.onload = function() {
+        const firebaseConfig = {
+          apiKey: "AIzaSyBYwgt-Aq-ZJrgSuOphrJryMxtro",
+          authDomain: "aeld-b5856.firebaseapp.com",
+          projectId: "aeld-b5856",
+          storageBucket: "aeld-b5856.appspot.com",
+          messagingSenderId: "372163813001",
+          appId: "1:372163813001:web:9ed8679669963063c8f058",
+          measurementId: "G-3DMJ6NMZNZ"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        async function updateDashboardStats() {
+          const grid = document.getElementById("statsGrid");
+          grid.innerHTML = '<p style="text-align:center; color:#7fb3c8; grid-column: 1 / -1; padding:40px;">Loading stats...</p>';
+
+          try {
+            const snapshot = await db.collection("submissions")
+              .where("status", "==", "approved")
+              .get();
+
+            if (snapshot.empty) {
+              grid.innerHTML = `
+                <div class="card" style="grid-column: 1 / -1; text-align:center; padding:40px;">
+                  No approved records yet. Approve some to see stats! 📊
+                </div>
+              `;
+              return;
+            }
+
+            let totalLevels = snapshot.size;
+            let uniquePlayers = new Set();
+
+            snapshot.forEach((doc) => {
+              const data = doc.data();
+              if (data.player) uniquePlayers.add(data.player.trim());
+            });
+
+            const totalVictors = uniquePlayers.size;
+
+            grid.innerHTML = `
+              <div class="card">
+                <div class="card-title">TOTAL LEVELS</div>
+                <div class="big">${totalLevels}</div>
+              </div>
+
+              <div class="card">
+                <div class="card-title">TOTAL VICTORS</div>
+                <div class="big">${totalVictors}</div>
+              </div>
+
+              <div class="card">
+                <div class="card-title">DIFFICULTY</div>
+                <div class="big">Easy</div> <!-- placeholder; change later if you want -->
+              </div>
+            `;
+          } catch (err) {
+            console.error("Dashboard error:", err);
+            grid.innerHTML = `
+              <div class="card" style="grid-column: 1 / -1; color:#ff6b6b; text-align:center; padding:20px;">
+                Error loading stats: ${err.message}. Check console (F12).
+              </div>
+            `;
+          }
+        }
+
+        updateDashboardStats();
+      };
+      document.head.appendChild(firestoreScript);
+    };
+    document.head.appendChild(appScript);
+  };
+
+  loadFirebase();
+</script>
+
+</body>
+</html>

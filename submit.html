@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Submit Record</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="nav">
+  <div class="logo">AELD</div>
+  <a href="index.html">Dashboard</a>
+  <a href="levels.html">Levels</a>
+  <a href="players.html">Top Players</a>
+  <a href="submit.html">Submit Record</a>
+</div>
+
+<div class="container">
+
+  <h2>Submit Record</h2>
+
+  <div class="card">
+    <input id="player" placeholder="Player Name">
+    <input id="level" placeholder="Level Name">
+    <input id="completion" placeholder="Completion %">
+    <input id="proof" placeholder="Video Proof Link">
+    <button onclick="submitRecord()">Submit Record</button>
+  </div>
+
+</div>
+
+<!-- Paste the Firebase + submit logic here (from earlier) -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBYwgt-Aq-ZJrgSuOphrJryMxtro",
+    authDomain: "aeld-b5856.firebaseapp.com",
+    projectId: "aeld-b5856",
+    storageBucket: "aeld-b5856.appspot.com",
+    messagingSenderId: "372163813001",
+    appId: "1:372163813001:web:9ed8679669963063c8f058",
+    measurementId: "G-3DMJ6NMZNZ"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  async function submitRecord() {
+    const player = document.getElementById("player").value.trim();
+    const level = document.getElementById("level").value.trim();
+    const completion = document.getElementById("completion").value.trim();
+    const proof = document.getElementById("proof").value.trim();
+
+    if (!player || !level || !proof) {
+      alert("Please fill in Player Name, Level Name, and Video Proof Link at minimum.");
+      return;
+    }
+
+    try {
+      await addDoc(collection(db, "submissions"), {
+        player,
+        level,
+        completion: completion || "100",
+        proof,
+        status: "pending",
+        time: Date.now(),
+        submittedAt: new Date().toISOString()
+      });
+
+      alert("Record submitted successfully! Waiting for approval.");
+      document.getElementById("player").value = "";
+      document.getElementById("level").value = "";
+      document.getElementById("completion").value = "";
+      document.getElementById("proof").value = "";
+    } catch (error) {
+      console.error("Error:", error);
+      alert("Error submitting — check console (F12).");
+    }
+  }
+  window.submitRecord = submitRecord;
+</script>
+
+</body>
+</html>

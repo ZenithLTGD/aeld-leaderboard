@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>AELD – Admin Panel</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="nav">
+  <div class="logo">AELD</div>
+  <a href="index.html">Dashboard</a>
+  <a href="levels.html">Levels</a>
+  <a href="players.html">Top Players</a>
+  <a href="submit.html">Submit Record</a>
+</div>
+
+<div class="container">
+  <h2>Admin Panel – Pending Submissions & Ranking</h2>
+  <p style="color: #7fb3c8; margin-bottom: 24px;">
+    Review records and set ranks for approved ones. Lower rank number = higher position (#1 is top).
+  </p>
+
+  <div id="pendingList" class="grid" style="grid-template-columns: 1fr;"></div>
+</div>
+
+<script>
+  // PASSWORD PROTECTION – ONLY YOU CAN ACCESS
+  const password = prompt("Enter admin password:");
+  if (password !== "Airingasyratop1zmogusjisyratuff") {
+    alert("Incorrect password. Access denied.");
+    window.location.href = "index.html";
+  }
+
+  // Load Firebase compat
+  const loadFirebase = function() {
+    const appScript = document.createElement('script');
+    appScript.src = "https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js";
+    appScript.onload = function() {
+      const firestoreScript = document.createElement('script');
+      firestoreScript.src = "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js";
+      firestoreScript.onload = function() {
+        const firebaseConfig = {
+          apiKey: "AIzaSyBYwgt-Aq-ZJrgSuOphrJryMxtro",
+          authDomain: "aeld-b5856.firebaseapp.com",
+          projectId: "aeld-b5856",
+          storageBucket: "aeld-b5856.appspot.com",
+          messagingSenderId: "372163813001",
+          appId: "1:372163813001:web:9ed8679669963063c8f058",
+          measurementId: "G-3DMJ6NMZNZ"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        async function loadPending() {
+          const container = document.getElementById("pendingList");
+          container.innerHTML = '<p style="color:#7fb3c8; text-align:center; padding:40px;">Loading records...</p>';
+
+          try {
+            const querySnapshot = await db.collection("submissions").get();
+            container.innerHTML = "";
+
+            let found = false;
+
+            querySnapshot.forEach((doc) => {
+              const data = doc.data();
+              const isPending = data.status === "pending";
+              const isApproved = data.status === "approved";
+
+              if (isPending || isApproved) {
+                found = true;
+
+                const card = document.createElement("div");
+                card.className = "card";
+                card.style.marginBottom = "16px";
+                card.style.borderColor = isApproved ? "#1ccad8" : "#123040"; // cyan border for approved
+                card.innerHTML = `
+                  <div style="margin-bottom: 12px;">
+                    <strong style="color:#e6f3ff;">${isApproved ? "Approved" : "Pending"} Record</strong><br>
+                    <strong style="color:#e6f3ff;">Player:</strong> ${data.player || "—"}<br>
+                    <strong style="color:#e6f3ff;">Level:</strong> ${data.level || "—"}<br>
+                    <strong style="color:#e6f3ff;">Completion:</strong> ${data.completion || "—"}%<br>
+                    <strong style="color:#e6f3ff;">Proof:</strong> 
+                      <a href="${data.proof || '#'}" target="_blank" style="color:#35e0ff;">
+                        Open video ↗
+                      </a><br>
+                    <small style="color:#7fb3c8;">
+                      Submitted: ${data.submittedAt ? new Date(data.submittedAt).toLocaleString() : "—"}
+                    </small>
+                  </div>
+
+                  ${isApproved ? `
+                    <div style="margin-top: 16px;">
+                      <label style="color:#7fb3c8; display:block; margin-bottom: 8px;">
+                        Rank (1 = top position, 100 = lowest/best):
+                      </label>
+                      <input type="number" id="rank-${doc.id}" value="${data.rank || ''}" placeholder="1–100" min="1" max="100" step="1" style="width: 80px; padding: 8px; border-radius: 6px; background: #0a1d27; color: white; border: 1px solid #123040;">
+                      <button onclick="saveRank('${doc.id}')" style="margin-left: 12px; background: linear-gradient(135deg, #1ccad8, #35e0ff);">
+                        Save Rank
+                      </button>
+                    </div>
+                  ` : ''}
+
+                  <div style="display:flex; gap:12px; margin-top:16px;">
+                    ${isPending ? `
+                      <button onclick="approve('${doc.id}')">Approve</button>
+                      <button onclick="decline('${doc.id}')" style="background: linear-gradient(135deg, #ff6b6b, #ff4757);">
+                        Decline
+                      </button>
+                    ` : `
+                      <small style="color:#1ccad8;">Approved – Edit rank above (1–100)</small>
+                    `}
+                  </div>
+                `;
+
+                container.appendChild(card);
+              }
+            });
+
+            if (!found) {
+              container.innerHTML = `
+                <div class="card" style="text-align:center; padding:40px; color:#7fb3c8;">
+                  No records to review or rank yet. Queue is clear! 📭
+                </div>
+              `;
+            }
+          } catch (err) {
+            console.error("Load error:", err);
+            container.innerHTML = `
+              <div class="card" style="color:#ff6b6b; text-align:center; padding:20px;">
+                Error loading records: ${err.message}. Check console (F12).
+              </div>
+            `;
+          }
+        }
+
+        window.approve = async function(id) {
+          if (!confirm("Approve this record?")) return;
+          try {
+            await db.collection("submissions").doc(id).update({ status: "approved" });
+            alert("Approved!");
+            loadPending();
+          } catch (err) {
+            alert("Error approving: " + err.message);
+          }
+        };
+
+        window.decline = async function(id) {
+          if (!confirm("Decline this record?")) return;
+          try {
+            await db.collection("submissions").doc(id).update({ status: "declined" });
+            alert("Declined.");
+            loadPending();
+          } catch (err) {
+            alert("Error declining: " + err.message);
+          }
+        };
+
+        window.saveRank = async function(id) {
+          const rankInput = document.getElementById(`rank-${id}`);
+          const newRank = parseInt(rankInput.value.trim());
+
+          if (isNaN(newRank) || newRank < 1 || newRank > 100) {
+            alert("Rank must be a number between 1 and 100.");
+            return;
+          }
+
+          if (!confirm(`Set rank to ${newRank}? (1 = top position, 100 = lowest)`)) return;
+
+          try {
+            await db.collection("submissions").doc(id).update({ rank: newRank });
+            alert(`Rank saved as ${newRank}! Refresh levels page to see the new order.`);
+            loadPending(); // refresh list
+          } catch (err) {
+            alert("Error saving rank: " + err.message);
+          }
+        };
+
+        // Load now
+        loadPending();
+      };
+      document.head.appendChild(firestoreScript);
+    };
+    document.head.appendChild(appScript);
+  };
+
+  loadFirebase();
+</script>
+
+</body>
+</html>

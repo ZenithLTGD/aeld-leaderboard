@@ -1,0 +1,124 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Inter, Arial, sans-serif;
+  background: linear-gradient(135deg, #06131a, #0b2230);
+  color: #e6f3ff;
+}
+
+.nav {
+  background: #081a24;
+  padding: 16px 28px;
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  border-bottom: 1px solid #123040;
+}
+
+.nav a {
+  color: #9cc7d8;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.nav a:hover {
+  color: #35e0ff;
+}
+
+.logo {
+  font-size: 20px;
+  font-weight: 800;
+  color: #35e0ff;
+  margin-right: auto;
+}
+
+.container {
+  max-width: 1100px;
+  margin: auto;
+  padding: 30px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+}
+
+.card {
+  background: #0d2432;
+  border-radius: 14px;
+  padding: 20px;
+  box-shadow: 0 0 0 1px #123040, 0 8px 30px rgba(0,0,0,0.4);
+}
+
+.card-title {
+  color: #7fb3c8;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.big {
+  font-size: 28px;
+  font-weight: 800;
+  margin-top: 8px;
+}
+
+.list-item {
+  background: #0d2432;
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: 0.2s;
+  border: 1px solid #123040;
+}
+
+.list-item:hover {
+  transform: translateY(-2px);
+  border-color: #1ccad8;
+}
+
+.rank {
+  background: linear-gradient(135deg, #1ccad8, #35e0ff);
+  color: #00343a;
+  font-weight: 800;
+  padding: 8px 12px;
+  border-radius: 10px;
+  margin-right: 14px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+input, select {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #123040;
+  background: #0a1d27;
+  color: white;
+  margin-bottom: 14px;
+}
+
+button {
+  background: linear-gradient(135deg, #1ccad8, #35e0ff);
+  border: none;
+  color: #00343a;
+  font-weight: 700;
+  padding: 12px 18px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+button:hover {
+  filter: brightness(1.1);
+}
