@@ -3,14 +3,20 @@
 <head>
   <title>AELD Dashboard</title>
   <link rel="stylesheet" href="style.css">
+  
+  <!-- Favicon links - using your file logo2.png -->
+  <link rel="icon" type="image/png" href="logo2.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="logo2.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="logo2.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="logo2.png">
 </head>
 <body>
 
 <div class="nav">
   <a href="index.html" class="logo" style="display: flex; align-items: center; gap: 10px; text-decoration: none;">
-  <img src="logo.png" alt="AELD Logo" style="height: 40px; width: auto;">
-  <span style="color: white; font-weight: bold;">AELD</span>
-</a>
+    <img src="logo.png" alt="AELD Logo" style="height: 40px; width: auto;">
+    <span style="color: white; font-weight: bold;">AELD</span>
+  </a>
   <a href="index.html">Dashboard</a>
   <a href="levels.html">Levels</a>
   <a href="players.html">Top Players</a>
@@ -21,7 +27,17 @@
   <h2>Dashboard</h2>
 
   <div class="grid" id="statsGrid">
-    <!-- Stats will be filled here dynamically -->
+    <!-- Basic stats cards will be filled here -->
+  </div>
+
+  <div style="margin-top: 40px;">
+    <h3>Latest Approved</h3>
+    <div id="latestApproved" class="card" style="padding: 20px;"></div>
+  </div>
+
+  <div style="margin-top: 40px;">
+    <h3>Hardest Level</h3>
+    <div id="hardestLevel" class="card" style="padding: 20px;"></div>
   </div>
 </div>
 
@@ -47,9 +63,14 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        async function updateDashboardStats() {
-          const grid = document.getElementById("statsGrid");
-          grid.innerHTML = '<p style="text-align:center; color:#7fb3c8; grid-column: 1 / -1; padding:40px;">Loading stats...</p>';
+        async function updateDashboard() {
+          const statsGrid = document.getElementById("statsGrid");
+          const latestDiv = document.getElementById("latestApproved");
+          const hardestDiv = document.getElementById("hardestLevel");
+
+          statsGrid.innerHTML = '<p style="grid-column: 1 / -1; text-align:center; color:#7fb3c8; padding:40px;">Loading dashboard...</p>';
+          latestDiv.innerHTML = '<p style="text-align:center; color:#7fb3c8;">Loading...</p>';
+          hardestDiv.innerHTML = '<p style="text-align:center; color:#7fb3c8;">Loading...</p>';
 
           try {
             const snapshot = await db.collection("submissions")
@@ -57,51 +78,103 @@
               .get();
 
             if (snapshot.empty) {
-              grid.innerHTML = `
-                <div class="card" style="grid-column: 1 / -1; text-align:center; padding:40px;">
-                  No approved records yet. Approve some to see stats! 📊
+              statsGrid.innerHTML = `
+                <div style="grid-column: 1 / -1; text-align:center; padding:40px; color:#7fb3c8;">
+                  No approved records yet.<br><br>
+                  <strong>Be the first to submit a record!</strong>
                 </div>
               `;
+              latestDiv.innerHTML = '';
+              hardestDiv.innerHTML = '';
               return;
             }
 
             let totalLevels = snapshot.size;
             let uniquePlayers = new Set();
+            let latest = null;
+            let hardest = null;
 
-            snapshot.forEach((doc) => {
+            snapshot.forEach(doc => {
               const data = doc.data();
               if (data.player) uniquePlayers.add(data.player.trim());
+
+              // Latest: most recent (using submittedAt or time)
+              const timestamp = data.submittedAt || data.time || 0;
+              if (!latest || timestamp > latest.timestamp) {
+                latest = { ...data, timestamp };
+              }
+
+              // Hardest: lowest rank
+              if (data.rank && (!hardest || data.rank < hardest.rank)) {
+                hardest = data;
+              }
             });
 
             const totalVictors = uniquePlayers.size;
 
-            grid.innerHTML = `
+            // Difficulty logic
+            let difficulty = "Easy";
+            if (totalLevels > 10) difficulty = "Extreme";
+            else if (totalLevels > 5) difficulty = "Hard";
+            else if (totalLevels > 0) difficulty = "Medium";
+
+            // Stats cards
+            statsGrid.innerHTML = `
               <div class="card">
                 <div class="card-title">TOTAL LEVELS</div>
                 <div class="big">${totalLevels}</div>
               </div>
-
               <div class="card">
                 <div class="card-title">TOTAL VICTORS</div>
                 <div class="big">${totalVictors}</div>
               </div>
-
               <div class="card">
                 <div class="card-title">DIFFICULTY</div>
-                <div class="big">Easy</div> <!-- placeholder; change later if you want -->
+                <div class="big">${difficulty}</div>
               </div>
             `;
+
+            // Latest approved
+            if (latest) {
+              const timeAgo = latest.timestamp ? new Date(latest.timestamp).toLocaleString() : "Unknown";
+              latestDiv.innerHTML = `
+                <div>
+                  <strong>${latest.level || "Unnamed"}</strong> by ${latest.player || "Unknown"}<br>
+                  <small style="color:#7fb3c8;">Progress: ${latest.completion || "?"}% • Approved ${timeAgo}</small>
+                </div>
+                <a href="${latest.proof || '#'}" target="_blank" style="color:#35e0ff; margin-top:8px; display:inline-block;">
+                  View Proof ↗
+                </a>
+              `;
+            } else {
+              latestDiv.innerHTML = '<p style="text-align:center; color:#7fb3c8;">No recent approvals.</p>';
+            }
+
+            // Hardest level (rank 1)
+            if (hardest && hardest.rank === 1) {
+              hardestDiv.innerHTML = `
+                <div>
+                  <strong>#1 - ${hardest.level || "Unnamed"}</strong> by ${hardest.player || "Unknown"}<br>
+                  <small style="color:#7fb3c8;">Progress: ${hardest.completion || "?"}%</small>
+                </div>
+                <a href="level-details.html?level=${encodeURIComponent(hardest.level || "Unnamed")}" style="color:#35e0ff; margin-top:8px; display:inline-block;">
+                  View Victors ↗
+                </a>
+              `;
+            } else {
+              hardestDiv.innerHTML = '<p style="text-align:center; color:#7fb3c8;">No rank 1 level yet.</p>';
+            }
           } catch (err) {
             console.error("Dashboard error:", err);
-            grid.innerHTML = `
-              <div class="card" style="grid-column: 1 / -1; color:#ff6b6b; text-align:center; padding:20px;">
-                Error loading stats: ${err.message}. Check console (F12).
+            statsGrid.innerHTML = `
+              <div style="grid-column: 1 / -1; color:#ff6b6b; text-align:center; padding:20px;">
+                Error loading dashboard: ${err.message}. Check console (F12).
               </div>
             `;
           }
         }
 
-        updateDashboardStats();
+        updateDashboard();
       };
       document.head.appendChild(firestoreScript);
     };

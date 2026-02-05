@@ -3,14 +3,15 @@
 <head>
   <title>AELD – Admin Panel</title>
   <link rel="stylesheet" href="style.css">
+  <link rel="icon" type="image/png" href="logo2.png">
 </head>
 <body>
 
 <div class="nav">
   <a href="index.html" class="logo" style="display: flex; align-items: center; gap: 10px; text-decoration: none;">
-  <img src="logo.png" alt="AELD Logo" style="height: 40px; width: auto;">
-  <span style="color: white; font-weight: bold;">AELD</span>
-</a>
+    <img src="logo.png" alt="AELD Logo" style="height: 40px; width: auto;">
+    <span style="color: white; font-weight: bold;">AELD</span>
+  </a>
   <a href="index.html">Dashboard</a>
   <a href="levels.html">Levels</a>
   <a href="players.html">Top Players</a>
@@ -76,7 +77,7 @@
                 const card = document.createElement("div");
                 card.className = "card";
                 card.style.marginBottom = "16px";
-                card.style.borderColor = isApproved ? "#1ccad8" : "#123040"; // cyan border for approved
+                card.style.borderColor = isApproved ? "#1ccad8" : "#123040";
                 card.innerHTML = `
                   <div style="margin-bottom: 12px;">
                     <strong style="color:#e6f3ff;">${isApproved ? "Approved" : "Pending"} Record</strong><br>
@@ -173,7 +174,7 @@
           try {
             await db.collection("submissions").doc(id).update({ rank: newRank });
             alert(`Rank saved as ${newRank}! Refresh levels page to see the new order.`);
-            loadPending(); // refresh list
+            loadPending();
           } catch (err) {
             alert("Error saving rank: " + err.message);
           }
