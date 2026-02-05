@@ -3,14 +3,41 @@
 <head>
 <title>Submit Record</title>
 <link rel="stylesheet" href="style.css">
+<style>
+  .guidelines {
+    background: #0d2432;
+    border: 1px solid #123040;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 20px 0 30px;
+    color: #9cc7d8;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+  .guidelines h3 {
+    color: #35e0ff;
+    margin: 0 0 12px;
+    font-size: 18px;
+  }
+  .guidelines ol {
+    margin: 0;
+    padding-left: 24px;
+  }
+  .guidelines li {
+    margin-bottom: 10px;
+  }
+  .guidelines strong {
+    color: #ff6b6b; /* red for emphasis on must/important parts */
+  }
+</style>
 </head>
 <body>
 
 <div class="nav">
   <a href="index.html" class="logo" style="display: flex; align-items: center; gap: 10px; text-decoration: none;">
-  <img src="logo.png" alt="AELD Logo" style="height: 40px; width: auto;">
-  <span style="color: white; font-weight: bold;">AELD</span>
-</a>
+    <img src="logo.png" alt="AELD Logo" style="height: 40px; width: auto;">
+    <span style="color: white; font-weight: bold;">AELD</span>
+  </a>
   <a href="index.html">Dashboard</a>
   <a href="levels.html">Levels</a>
   <a href="players.html">Top Players</a>
@@ -18,9 +45,23 @@
 </div>
 
 <div class="container">
-
   <h2>Submit Record</h2>
 
+  <!-- Guidelines / Rules block -->
+  <div class="guidelines">
+    <h3>Rule Guidelines</h3>
+    <ol>
+      <li>You <strong>MUST</strong> add the ID of the level in the level name. Example: <strong>Future Funk (54356544)</strong></li>
+      <li>Please make the video proof <strong>ON YOUTUBE</strong>. Add a nice thumbnail of the level. You can make it public or unlisted on your channel.</li>
+      <li>Please make the videos high-quality with clicks or a handcam.</li>
+      <li>Completion should be accurate. Only enter numbers, no symbols. Example: <strong>54</strong>. Bad example: <strong>54% (NO PERCENT SYMBOL.)</strong></li>
+      <li>Show the full raw footage of the run.</li>
+      <li>All submissions are reviewed. Invalid ones will be declined.</li>
+      <li>Please follow these guidelines. If you don't, your record will instantly get declined.</li>
+    </ol>
+  </div>
+
+  <!-- Your form (unchanged) -->
   <div class="card">
     <input id="player" placeholder="Player Name">
     <input id="level" placeholder="Level Name">
@@ -28,10 +69,9 @@
     <input id="proof" placeholder="Video Proof Link">
     <button onclick="submitRecord()">Submit Record</button>
   </div>
-
 </div>
 
-<!-- Paste the Firebase + submit logic here (from earlier) -->
+<!-- Firebase + submit logic (unchanged) -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
   import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
