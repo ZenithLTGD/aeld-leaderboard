@@ -122,3 +122,26 @@ button {
 button:hover {
   filter: brightness(1.1);
 }
+
+/* NEW: Logo styles added here */
+.logo img {
+  max-height: 40px; /* change this number to resize (32px–48px is common) */
+  width: auto;
+  vertical-align: middle;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.logo img:hover {
+  transform: scale(1.05); /* tiny zoom on hover – optional */
+  transition: transform 0.2s;
+}
