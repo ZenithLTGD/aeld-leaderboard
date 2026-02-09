@@ -1,4 +1,4 @@
-// script.js - FIXED version with unique levels, victors details, and thumbnails
+// script.js - Rewritten to always use hqdefault.jpg for reliable YouTube thumbnails
 
 console.log("script.js loaded");
 
@@ -50,9 +50,12 @@ const loadFirebase = () => {
 
 loadFirebase();
 
-// Helper to get YouTube thumbnail
+// Helper to get YouTube thumbnail – now always uses hqdefault (reliable)
 function getThumbnail(proof) {
-  if (!proof) return 'https://via.placeholder.com/200x112/0d2432/7fb3c8?text=No+Thumbnail';
+  if (!proof) {
+    console.log("No proof link — using placeholder");
+    return 'https://via.placeholder.com/200x112/0d2432/7fb3c8?text=No+Thumbnail';
+  }
 
   let videoId = '';
   const patterns = [
@@ -67,13 +70,17 @@ function getThumbnail(proof) {
     const match = proof.match(pattern);
     if (match && match[1]) {
       videoId = match[1];
+      console.log("Found video ID:", videoId, "from proof:", proof);
       break;
     }
   }
 
   if (videoId) {
-    return `https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg`;
+    console.log("Using hqdefault thumbnail for ID:", videoId);
+    return `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
   }
+
+  console.log("No valid video ID found in proof:", proof);
   return 'https://via.placeholder.com/200x112/0d2432/7fb3c8?text=No+YouTube+Link';
 }
 
@@ -123,7 +130,10 @@ function renderUniqueLevels() {
         item.className = "list-item";
         item.style.cursor = "pointer";
         item.innerHTML = `
-          <img src="${thumb}" alt="${level.name}" style="width:200px;height:112px;object-fit:cover;border-radius:8px;margin-right:16px;" onerror="this.src='https://via.placeholder.com/200x112/0d2432/7fb3c8?text=No+Thumb';">
+          <img src="${thumb}" alt="${level.name}" 
+               style="width:200px;height:112px;object-fit:cover;border-radius:8px;margin-right:16px;" 
+               onerror="console.log('hqdefault failed for ' + '${level.proof}' + ' — using placeholder'); 
+                        this.src='https://via.placeholder.com/200x112/0d2432/7fb3c8?text=No+Thumb';">
           <div style="flex:1;">
             <div class="row">
               <div class="rank">#${rank}</div>
@@ -161,7 +171,7 @@ function renderUniqueLevels() {
     });
 }
 
-// 2. Victors on level-details.html
+// 2. Victors on level-details.html (unchanged)
 function renderLevelVictors() {
   const box = document.getElementById("victorsBox");
   if (!box) return;
